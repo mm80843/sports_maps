@@ -6,7 +6,7 @@
 
 A lib version of the sports master planning code.
 
-Aimed a producing sport overviews for certain cities. Demoes of reports for [Sedan](examples\outputs\rapports_8409.docx) and the [Kremlin Bicetre](examples\outputs\rapports_94043.docx).
+Aimed a producing sport overviews for certain cities. Demoes of reports for [Sedan](examples/outputs/rapports_8409.docx) and the [Kremlin Bicetre](examples/outputs/rapports_94043.docx).
 
 ## Repository Ownership
 * **Practice**: Sport
@@ -38,6 +38,6 @@ data.createReport(); #produces the report
 
 ```
 
-It produces [this report](examples\outputs\rapports_8409.docx), and this map:
+It produces [this report](examples/outputs/rapports_8409.docx), and this map:
 
-![](examples\outputs\8409_terrain.png)
+![](examples/outputs/8409_terrain.png)
