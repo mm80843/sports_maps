@@ -193,12 +193,7 @@ class dataSets:
         
         return fig
 
-    def createReport(self,template="",output=""):
-
-        if template == "":
-            template = self.ref + "templates/report_template.docx"
-        if  output == "":
-            output = 'outputs/rapports_'+str(self.CodeVille)+'.docx'
+    def PrepareDocument(self):
 
         TABLEAUEQUIPEMENTS = self.gdfRES_VilleCible[["EquipementId","InsNom","EquNom","EquipementTypeLib","EquNbEquIdentique","GestionTypeProprietairePrincLib","EquAnneeService","EquErpCategorie"]]
         TABLEAUEQUIPEMENTS.EquAnneeService = TABLEAUEQUIPEMENTS.EquAnneeService.astype(int)
@@ -229,12 +224,21 @@ class dataSets:
         StatsClubs.columns = [["Nom de la fédération","Licenciés","% de la population communale"]]
         self.StatsClubs = StatsClubs
 
-
-
         self.SOURCES = "Données équipements sportifs: https://www.data.gouv.fr/fr/datasets/recensement-des-equipements-sportifs-espaces-et-sites-de-pratiques/ \n"
         self.SOURCES += "Données éducation: https://www.data.gouv.fr/fr/datasets/adresse-et-geolocalisation-des-etablissements-denseignement-du-premier-et-second-degres-1/ \n"
         self.SOURCES += "Découpage communal: https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/ \n"
         self.SOURCES += "Licenses sportives 2015: https://www.data.gouv.fr/fr/datasets/donnees-geocodees-issues-du-recensement-des-licences-et-clubs-aupres-des-federations-sportives-agreees-par-le-ministere-charge-des-sports/ \n"
+        
+
+    def createReport(self,template="",output=""):
+
+        # Prepare supporting tables and analyses
+        self.PrepareDocument()
+
+        if template == "":
+            template = self.ref + "templates/report_template.docx"
+        if  output == "":
+            output = 'outputs/rapports_'+str(self.CodeVille)+'.docx'
 
         document = Document(docx=template)
 
@@ -262,3 +266,44 @@ class dataSets:
 
         document.save(output)
         print("Document sauvé sous "+output+ " .")
+
+    def createReportMarkdown(self,template="",output=""):
+
+
+            if  output == "":
+                output = 'outputs/rapports_'+str(self.CodeVille)+'.md'
+            # Prepare supporting tables and analyses
+            self.PrepareDocument()
+    
+            MD = ""
+
+            MD += '# Revue de la ville de '+self.VilleCible.ComLib.iloc[0]+' ('+str(self.CodeVille)+")\n"
+
+            MD += "## Sources\n\n"
+            MD += self.SOURCES
+
+            MD += "## Liste des équipements de la ville\n\n"
+
+
+            MD += "\n\nIl y a "+str(int(self.NBEQ))+" équipements sportifs pour "+str(int(self.Population))+ " habitants, soit un ratio de "+str(int(self.NBEQ*10000/self.Population))+" équipements pour 10.000 habitants."
+
+            MD += "\n\n"+self.StatsEquipementVille.to_markdown()
+            MD += "\n\n## Vue d'ensemble de la ville\n\n"
+            
+            MD += "![](outputs/"+str(self.CodeVille)+"_terrain.png)\n\n"
+
+
+
+            MD += "## Revue des équipements \n\n"
+            MD += "\n\n"+self.TABLEAUEQUIPEMENTS.to_markdown()
+
+
+
+            MD += "\n\n## Revue des collèges et lycées\n\n"
+            MD += "\n\n"+self.DataEcoles.to_markdown()    
+
+            #saving the file   
+            with open(output, 'w') as f:
+                f.write(MD)
+
+            print("Document sauvé sous "+output+ " .")
