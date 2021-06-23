@@ -23,6 +23,7 @@ from docx import Document
 from docx.shared import Inches
 
 import contextily as ctx
+import unidecode
 
 
 
@@ -267,43 +268,40 @@ class dataSets:
         document.save(output)
         print("Document sauvé sous "+output+ " .")
 
-    def createReportMarkdown(self,template="",output=""):
 
+
+    def createReportMarkdown(self,template="",output=""):
 
             if  output == "":
                 output = 'outputs/rapports_'+str(self.CodeVille)+'.md'
             # Prepare supporting tables and analyses
             self.PrepareDocument()
-    
-            MD = ""
-
-            MD += '# Revue de la ville de '+self.VilleCible.ComLib.iloc[0]+' ('+str(self.CodeVille)+")\n"
+            MD = "".encode('utf8').decode('latin1') 
+            MD = '# Revue de la ville de '+self.VilleCible.ComLib.iloc[0]+' ('+str(self.CodeVille)+")\n"
 
             MD += "## Sources\n\n"
             MD += self.SOURCES
 
             MD += "## Liste des équipements de la ville\n\n"
-
-
             MD += "\n\nIl y a "+str(int(self.NBEQ))+" équipements sportifs pour "+str(int(self.Population))+ " habitants, soit un ratio de "+str(int(self.NBEQ*10000/self.Population))+" équipements pour 10.000 habitants."
-
             MD += "\n\n"+self.StatsEquipementVille.to_markdown()
+
             MD += "\n\n## Vue d'ensemble de la ville\n\n"
-            
-            MD += "![](outputs/"+str(self.CodeVille)+"_terrain.png)\n\n"
-
-
+            MD += "![]("+str(self.CodeVille)+"_terrain.png)\n\n"
 
             MD += "## Revue des équipements \n\n"
             MD += "\n\n"+self.TABLEAUEQUIPEMENTS.to_markdown()
-
-
 
             MD += "\n\n## Revue des collèges et lycées\n\n"
             MD += "\n\n"+self.DataEcoles.to_markdown()    
 
             #saving the file   
-            with open(output, 'w') as f:
+            with open(output, 'w',encoding='latin-1') as f:
                 f.write(MD)
-
+            self.MD = MD
             print("Document sauvé sous "+output+ " .")
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    only_ascii = nfkd_form.encode('ASCII', 'ignore')
+    return only_ascii
