@@ -265,6 +265,9 @@ class dataSets:
         document.add_heading('Revue des collèges et lycées', level=1)
         AddTable(document,self.DataEcoles)       
 
+        document.add_heading('Revue des licensiés', level=1)
+        AddTable(document,self.StatsClubs)       
+
         document.save(output)
         print("Document sauvé sous "+output+ " .")
 
@@ -294,6 +297,9 @@ class dataSets:
 
             MD += "\n\n## Revue des collèges et lycées\n\n"
             MD += "\n\n"+self.DataEcoles.to_markdown()    
+
+            MD += "\n\n## Revue des licensiés\n\n"
+            MD += "\n\n"+self.StatsClubs.to_markdown()    
 
             #saving the file   
             with open(output, 'w',encoding='latin-1') as f:
