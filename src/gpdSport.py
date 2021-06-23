@@ -23,7 +23,7 @@ from docx import Document
 from docx.shared import Inches
 
 import contextily as ctx
-import unidecode
+
 
 
 
@@ -225,10 +225,10 @@ class dataSets:
         StatsClubs.columns = [["Nom de la fédération","Licenciés","% de la population communale"]]
         self.StatsClubs = StatsClubs
 
-        self.SOURCES = "Données équipements sportifs: https://www.data.gouv.fr/fr/datasets/recensement-des-equipements-sportifs-espaces-et-sites-de-pratiques/ \n"
-        self.SOURCES += "Données éducation: https://www.data.gouv.fr/fr/datasets/adresse-et-geolocalisation-des-etablissements-denseignement-du-premier-et-second-degres-1/ \n"
-        self.SOURCES += "Découpage communal: https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/ \n"
-        self.SOURCES += "Licenses sportives 2015: https://www.data.gouv.fr/fr/datasets/donnees-geocodees-issues-du-recensement-des-licences-et-clubs-aupres-des-federations-sportives-agreees-par-le-ministere-charge-des-sports/ \n"
+        self.SOURCES = "* Données équipements sportifs: https://www.data.gouv.fr/fr/datasets/recensement-des-equipements-sportifs-espaces-et-sites-de-pratiques/ \n"
+        self.SOURCES += "* Données éducation: https://www.data.gouv.fr/fr/datasets/adresse-et-geolocalisation-des-etablissements-denseignement-du-premier-et-second-degres-1/ \n"
+        self.SOURCES += "* Découpage communal: https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/ \n"
+        self.SOURCES += "* Licenses sportives 2015: https://www.data.gouv.fr/fr/datasets/donnees-geocodees-issues-du-recensement-des-licences-et-clubs-aupres-des-federations-sportives-agreees-par-le-ministere-charge-des-sports/ \n"
         
 
     def createReport(self,template="",output=""):
@@ -300,8 +300,3 @@ class dataSets:
                 f.write(MD)
             self.MD = MD
             print("Document sauvé sous "+output+ " .")
-
-def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize('NFKD', input_str)
-    only_ascii = nfkd_form.encode('ASCII', 'ignore')
-    return only_ascii
