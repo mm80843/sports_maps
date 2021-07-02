@@ -3,11 +3,11 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-import cartopy
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import cartopy.io.img_tiles as cimgt
-import geopy.distance
+#import cartopy
+#import cartopy.crs as ccrs
+#import cartopy.feature as cfeature
+#import cartopy.io.img_tiles as cimgt
+#import geopy.distance
 #print(cartopy.__version__)
 import re
 
