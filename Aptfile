@@ -1,1 +1,3 @@
-cython==0.15.1
+python3-dev
+cython3
+build-essential
