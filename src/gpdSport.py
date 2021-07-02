@@ -11,9 +11,6 @@ import geopy.distance
 #print(cartopy.__version__)
 import re
 
-import seaborn as sns
-
-
 from geopy import distance
 
 from geopandas import GeoDataFrame
@@ -129,7 +126,7 @@ class dataSets:
         self.RES_VilleCible, self.VilleCible_POS, self.SHAPE_Commune
     
     
-    def CreateMap(self,ZOOM=11):
+    def CreateMap(self,ZOOM=11,streamlit=False):
         if not len(self.StrVilleCible):
             print("No city identified")
         else:
@@ -188,8 +185,10 @@ class dataSets:
 
             plt.title(TITLE,fontsize = 14)
             plt.tight_layout()
-
-            plt.savefig("outputs/"+str(self.CodeVille)+"_terrain.png")
+            self.FIG = fig
+            self.AX  = ax
+            if not streamlit:
+                plt.savefig("outputs/"+str(self.CodeVille)+"_terrain.png")
 
         
         return fig
@@ -265,7 +264,7 @@ class dataSets:
         document.add_heading('Revue des collèges et lycées', level=1)
         AddTable(document,self.DataEcoles)       
 
-        document.add_heading('Revue des licensiés', level=1)
+        document.add_heading('Revue des licenciés', level=1)
         AddTable(document,self.StatsClubs)       
 
         document.save(output)
@@ -298,7 +297,7 @@ class dataSets:
             MD += "\n\n## Revue des collèges et lycées\n\n"
             MD += "\n\n"+self.DataEcoles.to_markdown()    
 
-            MD += "\n\n## Revue des licensiés\n\n"
+            MD += "\n\n## Revue des licenciés\n\n"
             MD += "\n\n"+self.StatsClubs.to_markdown()    
 
             #saving the file   
@@ -306,3 +305,32 @@ class dataSets:
                 f.write(MD)
             self.MD = MD
             print("Document sauvé sous "+output+ " .")
+
+    def createStreamLitOutput(self):
+
+
+        # Prepare supporting tables and analyses
+        self.PrepareDocument()
+        MD = "".encode('utf8').decode('latin1') 
+        MD = '# Revue de la ville de '+self.VilleCible.ComLib.iloc[0]+' ('+str(self.CodeVille)+")\n"
+
+        MD += "## Sources\n\n"
+        MD += self.SOURCES
+
+        MD += "## Liste des équipements de la ville\n\n"
+        MD += "\n\nIl y a "+str(int(self.NBEQ))+" équipements sportifs pour "+str(int(self.Population))+ " habitants, soit un ratio de "+str(int(self.NBEQ*10000/self.Population))+" équipements pour 10.000 habitants."
+        MD += "\n\n"+self.StatsEquipementVille.to_markdown()
+
+        MD += "\n\n## Vue d'ensemble de la ville\n\n"
+
+        Md = "## Revue des équipements \n\n"
+        Md += "\n\n"+self.TABLEAUEQUIPEMENTS.to_markdown()
+
+        Md += "\n\n## Revue des collèges et lycées\n\n"
+        Md += "\n\n"+self.DataEcoles.to_markdown()    
+
+        Md += "\n\n## Revue des licenciés\n\n"
+        Md += "\n\n"+self.StatsClubs.to_markdown()    
+
+        return MD, Md
+
