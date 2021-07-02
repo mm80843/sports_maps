@@ -1,4 +1,5 @@
 Shapely==1.6.4
+Cython==0.29.21
 geopy==2.1.0
 streamlit==0.75.0
 pandas==1.2.4

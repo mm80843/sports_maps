@@ -1,6 +1,6 @@
 # Sport master planning basis from open data
 
-![Python Logo](./python_logo.png)
+![Python Logo](./python_logo.png) 
 
 ## Description
 
@@ -10,7 +10,7 @@ Aimed a producing sport overviews for certain cities. Demoes of reports for [Sed
 
 ## Repository Ownership
 * **Practice**: Sport
-* **Sector**: Asset management
+* **Sector**: Asset management 
 * **Original Author(s)**: Luc Jonveaux
 * **Contact Details for Current Repository Owner(s)**: luc.jonveaux@mottmac.com
 
