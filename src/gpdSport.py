@@ -1,28 +1,24 @@
 import pandas as pd
 import numpy as np
 
-import matplotlib.pyplot as plt
+from geopandas import GeoDataFrame
 
-import cartopy
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import cartopy.io.img_tiles as cimgt
-import geopy.distance
-#print(cartopy.__version__)
+# Doing maps
+import matplotlib.pyplot as plt
+import seaborn as sns
+import contextily as ctx
+
 import re
 
-import seaborn as sns
-
-
+# Calculating features
 from geopy import distance
-
-from geopandas import GeoDataFrame
 from shapely.geometry import Point
 
+# Export documents
 from docx import Document
 from docx.shared import Inches
 
-import contextily as ctx
+
 
 
 
@@ -55,21 +51,19 @@ def AddTable(doc,df):
 ## now the good dataset
 
 class dataSets:
-    # https://github.com/KitwareMedical/IntersonManager/blob/master/IntersonManager.cpp
-    # Interesting doc on the registers
+
     def __init__(self):
-        """Knit
+        """Init
         """ 
         print("Object created")
 
     def CreateDF(self,pathtoinputs):
-        self.ref = pathtoinputs
+        self.ref        =            pathtoinputs
         self.assetsSecondaire =      pd.read_pickle(pathtoinputs+'inputs/fr-en-adresse-et-geolocalisation-etablissements-premier-et-second-degre.pkl.gzip', compression='gzip')
         self.communes_gps =          pd.read_pickle(pathtoinputs+'inputs/communes_gps.pkl.gzip', compression='gzip')
         self.RES_FichesEquipements = pd.read_pickle(pathtoinputs+'inputs/20180110_RES_FichesEquipements.pkl.gzip', compression='gzip').fillna(0)
         self.CP =                    pd.read_pickle(pathtoinputs+'inputs/CP.pkl.gzip', compression='gzip')
         self.Licenses2015 =          pd.read_pickle(pathtoinputs+'inputs/Licences_2015.pkl.gzip', compression='gzip') 
-        
         return [self.assetsSecondaire,self.communes_gps,self.RES_FichesEquipements,self.CP,self.Licenses2015]
 
     ## Support for lycee - sport 
@@ -88,24 +82,22 @@ class dataSets:
 
 
     def CreateVille(self,VilleCibleNom):
-        
+        """We have a look at what the city has, in terms of different layers, and we stick to that.
+        No need for further elements.
+        """ 
         self.StrVilleCible = str(VilleCibleNom)
         VilleCible = self.RES_FichesEquipements[self.RES_FichesEquipements.ComInsee == VilleCibleNom]
-        #print(VilleCible)
         self.VilleCible = VilleCible
         self.assetsSecondaire["Code commune"] = pd.to_numeric(self.assetsSecondaire["Code commune"],errors="coerce")
         self.VilleCible_ecoles = self.assetsSecondaire[self.assetsSecondaire["Code commune"] == int(VilleCibleNom)]
         self.CodeVille = list(set(VilleCible.ComInsee.tolist()))[0]
-        #print("CodeVille : "+str(self.CodeVille))
         self.LICENSIES = self.Licenses2015[self.Licenses2015.newcog2 == VilleCibleNom]
 
         self.Eqts = VilleCible.groupby("EquipementTypeLib").EquNbEquIdentique.sum().to_frame()
         VilleEquipmentsNb = self.Eqts.sort_values(by='EquNbEquIdentique', ascending=False).reset_index()
         self.NBEQ = VilleEquipmentsNb.EquNbEquIdentique.sum()
-        #print(NBEQ)
         Eqts = VilleCible.groupby("EquipementTypeLib").EquAnneeService.count().to_frame()
         VilleEquipments = Eqts.sort_values(by='EquAnneeService', ascending=False).reset_index()
-        #print(VilleEquipments.EquAnneeService.sum())
 
         self.StatsEquipementVille = pd.merge(VilleEquipments,VilleEquipmentsNb,on="EquipementTypeLib")
         self.StatsEquipementVille.columns = ["Type d'équipement","Nombre de fiches","Nombre d'équipements"]
@@ -118,18 +110,19 @@ class dataSets:
                                                                     & (RES_VilleCible['EquGpsY'] < 51.5803338) \
                                                                     & (RES_VilleCible['EquGpsY'] > 40.88264395) ]
 
+
         self.VilleCible_POS = self.communes_gps[self.communes_gps.code_insee == self.CodeVille]
 
         self.SHAPE_Commune = self.CP[self.CP._CodePoste == self.VilleCible_POS.codes_postaux.values[0]]
         self.SHAPE_Commune.crs = {'init': 'epsg:4326'}
 
-
+        # We now have a lot of stuff. Mostly internal though
         return self.StrVilleCible,self.VilleCible,self.VilleCible_ecoles, self.CodeVille, self.LICENSIES,
         self.Eqts,VilleEquipmentsNb,NBEQ,VilleEquipments,self.StatsEquipementVille, 
         self.RES_VilleCible, self.VilleCible_POS, self.SHAPE_Commune
     
     
-    def CreateMap(self,ZOOM=11):
+    def CreateMap(self,ZOOM=11,streamlit=False):
         if not len(self.StrVilleCible):
             print("No city identified")
         else:
@@ -187,9 +180,11 @@ class dataSets:
             TITLE += str(len(self.VilleCible_ecoles))+" batiments scolaires.\n"
 
             plt.title(TITLE,fontsize = 14)
-            plt.tight_layout()
-
-            plt.savefig("outputs/"+str(self.CodeVille)+"_terrain.png")
+            # Adding some reference to the map object
+            self.FIG = fig
+            self.AX  = ax
+            if not streamlit:
+                plt.savefig("outputs/"+str(self.CodeVille)+"_terrain.png")
 
         
         return fig
@@ -213,10 +208,10 @@ class dataSets:
         self.DataEcoles = self.gdfEcoles_Ville[["Appellation officielle","Dénomination principale","distance_to_equpt","nearest","nearest_complex"]]
         self.DataEcoles.distance_to_equpt = self.DataEcoles.distance_to_equpt.astype(int)
         self.DataEcoles.columns = ["Etablissement","Type","Equipement le plus proche (m)","Type","Complexe"]
-        #self.DataEcoles.head()
 
+        # Calculating populations
         self.Population = self.LICENSIES.pop_2014.iloc[0]
-
+        # Qui a des licences dans la ville?
         StatsClubs = self.LICENSIES.pivot_table(index='nomFede', values='l_2015', aggfunc='sum', fill_value=0)
         StatsClubs = StatsClubs.sort_values(by='l_2015', ascending=False).reset_index()
         StatsClubs = StatsClubs[StatsClubs.l_2015 >0]
@@ -224,7 +219,7 @@ class dataSets:
         StatsClubs['% population'] = StatsClubs[['% population']].applymap(lambda x: "{0:.2f} %".format(x*100))
         StatsClubs.columns = [["Nom de la fédération","Licenciés","% de la population communale"]]
         self.StatsClubs = StatsClubs
-
+        # Let's remind what our sources were.
         self.SOURCES = "* Données équipements sportifs: https://www.data.gouv.fr/fr/datasets/recensement-des-equipements-sportifs-espaces-et-sites-de-pratiques/ \n"
         self.SOURCES += "* Données éducation: https://www.data.gouv.fr/fr/datasets/adresse-et-geolocalisation-des-etablissements-denseignement-du-premier-et-second-degres-1/ \n"
         self.SOURCES += "* Découpage communal: https://www.data.gouv.fr/fr/datasets/decoupage-administratif-communal-francais-issu-d-openstreetmap/ \n"
@@ -306,3 +301,33 @@ class dataSets:
                 f.write(MD)
             self.MD = MD
             print("Document sauvé sous "+output+ " .")
+
+
+
+    def createStreamLitOutput(self):
+
+
+        # Prepare supporting tables and analyses
+        self.PrepareDocument()
+        MD = "".encode('utf8').decode('latin1') 
+        MD = '# Revue de la ville de '+self.VilleCible.ComLib.iloc[0]+' ('+str(self.CodeVille)+")\n"
+
+        MD += "## Sources\n\n"
+        MD += self.SOURCES
+
+        MD += "## Liste des équipements de la ville\n\n"
+        MD += "\n\nIl y a "+str(int(self.NBEQ))+" équipements sportifs pour "+str(int(self.Population))+ " habitants, soit un ratio de "+str(int(self.NBEQ*10000/self.Population))+" équipements pour 10.000 habitants."
+        MD += "\n\n"+self.StatsEquipementVille.to_markdown()
+
+        MD += "\n\n## Vue d'ensemble de la ville\n\n"
+
+        Md = "## Revue des équipements \n\n"
+        Md += "\n\n"+self.TABLEAUEQUIPEMENTS.to_markdown()
+
+        Md += "\n\n## Revue des collèges et lycées\n\n"
+        Md += "\n\n"+self.DataEcoles.to_markdown()    
+
+        Md += "\n\n## Revue des licenciés\n\n"
+        Md += "\n\n"+self.StatsClubs.to_markdown()    
+
+        return MD, Md

@@ -41,3 +41,14 @@ data.createReport(); #produces the report
 It produces [this report](examples/outputs/rapports_8409.docx), and this map:
 
 ![](examples/outputs/8409_terrain.png)
+
+## Pushing to heroku
+
+Check out the ["app" branch"](https://github.com/mm80843/sports_maps/tree/app) for a working version - something to push to heroku.
+
+Requires a few backpacks but works:
+* https://github.com/heroku/heroku-buildpack-apt.git
+* https://github.com/heroku/heroku-geo-buildpack.git
+* heroku/python
+
+APT is to install a few pains (numpy, cython), geobuildpack to get GDAL et al. Python for python.
