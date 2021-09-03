@@ -12,7 +12,7 @@ Aimed a producing sport overviews for certain cities. Demoes of reports for [Sed
 * **Practice**: Sport
 * **Sector**: Asset management
 * **Original Author(s)**: Luc Jonveaux
-* **Contact Details for Current Repository Owner(s)**: luc.jonveaux@mottmac.com
+* **Contact Details for Current Repository Owner(s)**: luc.jonveaux@mottmac.com 
 
 ## Data
 
